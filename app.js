@@ -162,19 +162,19 @@ const MIME_TYPE_MAP = {
   'image/jpg': 'jpg',
 };
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "public/uploads");
-  },
-  filename: (req, file, cb) => {
-    const randomDigits = Math.random().toString().slice(2, 5); // Three random digits
-    const originalFilename = file.originalname.split(".").shift(); // Extract the original filename without extension
-    const fileExtension = MIME_TYPE_MAP[file.mimetype] || 'jpg'; // Use the mapped extension or default to 'jpg'
-    const newFilename = `${originalFilename}-${randomDigits}.${fileExtension}`;
-    cb(null, newFilename);
-  },
-});
-
+// const storage = multer.diskStorage({
+//   destination: (req, file, cb) => {
+//     cb(null, "public/uploads");
+//   },
+//   filename: (req, file, cb) => {
+//     const randomDigits = Math.random().toString().slice(2, 5); // Three random digits
+//     const originalFilename = file.originalname.split(".").shift(); // Extract the original filename without extension
+//     const fileExtension = MIME_TYPE_MAP[file.mimetype] || 'jpg'; // Use the mapped extension or default to 'jpg'
+//     const newFilename = `${originalFilename}-${randomDigits}.${fileExtension}`;
+//     cb(null, newFilename);
+//   },
+// });
+const storage = multer.memoryStorage();
 // Define the file filter function
 const fileFilter = (req, file, cb) => {
   const allowedFileTypes = /jpeg|jpg|png|gif|bmp|webp|tiff/;
@@ -965,14 +965,14 @@ app.post(
   upload.single("image"),
   async (req, res) => {
     const { title, description, type } = req.body;
-    const image = req.file.filename; // Get the uploaded image file name
+    const imageBuffer= req.file.toBuffer; // Get the uploaded image file name
 
     try {
       const artifact = new Artifact({
         title,
         type,
         description,
-        image,
+        image:imageBuffer.toString('base64'),
       });
       await artifact.save();
       res.redirect("/loggedInadmin"); // Redirect to the admin page after adding the artifact
