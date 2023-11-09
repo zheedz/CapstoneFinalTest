@@ -208,11 +208,18 @@ const processImage = (req, res, next) => {
     .resize({ width: 800, height: 600 })
     .toFormat('jpeg')
     .jpeg({ quality: 90 })
-    .toFile(imagePath, (err) => {
+    .toBuffer((err, buffer) => {
       if (err) {
         return next(err);
       }
-      next();
+
+      // Overwrite the existing image with the compressed one
+      fs.writeFile(imagePath, buffer, (writeErr) => {
+        if (writeErr) {
+          return next(writeErr);
+        }
+        next();
+      });
     });
 };
 
