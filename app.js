@@ -152,16 +152,17 @@ app.get("/reset-inactivity", (req, res) => {
   res.sendStatus(200); // Send a success response
 });
 
-// Configure storage for artifact images
+// Define the MIME type mapping
 const MIME_TYPE_MAP = {
   'image/png': 'png',
   'image/jpeg': 'jpg',
   'image/jpg': 'jpg',
 };
 
+// Configure storage for artifact images
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, "public/uploads");
+    cb(null, "public/uploads"); // Change the destination directory
   },
   filename: (req, file, cb) => {
     const randomDigits = Math.random().toString().slice(2, 5); // Three random digits
@@ -176,7 +177,7 @@ const storage = multer.diskStorage({
 const fileFilter = (req, file, cb) => {
   const allowedFileTypes = /jpeg|jpg|png|gif|bmp|webp|tiff/;
   const extname = allowedFileTypes.test(
-    path.extname(file.originalname).toLowerCase()
+    path.extname(file.originalname).toLowerCase() // Use the 'path' module to extract the extension
   );
   const mimetype = allowedFileTypes.test(file.mimetype);
 
@@ -189,10 +190,10 @@ const fileFilter = (req, file, cb) => {
   }
 };
 
-
 // Set up the multer middleware with the storage and file filter
 const upload = multer({ storage: storage, fileFilter: fileFilter });
 
+module.exports = upload;
 //NOT LOGGED IN
 
 app.get("/", (req, res) => {
