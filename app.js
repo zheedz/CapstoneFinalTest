@@ -152,32 +152,19 @@ app.get("/reset-inactivity", (req, res) => {
   res.sendStatus(200); // Send a success response
 });
 
-// Define the MIME type mapping
 const MIME_TYPE_MAP = {
   'image/png': 'png',
   'image/jpeg': 'jpg',
   'image/jpg': 'jpg',
 };
 
-// Configure storage for artifact images
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "public/uploads"); // Change the destination directory
-  },
-  filename: (req, file, cb) => {
-    const randomDigits = Math.random().toString().slice(2, 5); // Three random digits
-    const originalFilename = file.originalname.split(".").shift(); // Extract the original filename without extension
-    const fileExtension = MIME_TYPE_MAP[file.mimetype] || 'jpg'; // Use the mapped extension or default to 'jpg'
-    const newFilename = `${originalFilename}-${randomDigits}.${fileExtension}`;
-    cb(null, newFilename);
-  },
-});
+const storage = multer.memoryStorage(); // Store the file in memory
 
 // Define the file filter function
 const fileFilter = (req, file, cb) => {
   const allowedFileTypes = /jpeg|jpg|png|gif|bmp|webp|tiff/;
   const extname = allowedFileTypes.test(
-    path.extname(file.originalname).toLowerCase() // Use the 'path' module to extract the extension
+    path.extname(file.originalname).toLowerCase()
   );
   const mimetype = allowedFileTypes.test(file.mimetype);
 
@@ -191,9 +178,28 @@ const fileFilter = (req, file, cb) => {
 };
 
 // Set up the multer middleware with the storage and file filter
-const upload = multer({ storage: storage, fileFilter: fileFilter });
+const upload = multer({ storage: storage, fileFilter: fileFilter }).single("image");
 
-module.exports = upload;
+// Handle the file upload and conversion to base64
+app.post("/upload", (req, res) => {
+  upload(req, res, (err) => {
+    if (err) {
+      return res.status(400).json({ error: err });
+    }
+    
+    if (!req.file) {
+      return res.status(400).json({ error: "No file provided." });
+    }
+    
+    const fileBuffer = req.file.buffer;
+    const base64String = fileBuffer.toString("base64");
+
+    // Now, you can store the base64String in your database or use it as needed
+    // For example, you can send it as a response or save it to a database
+    res.status(200).json({ base64Image: base64String });
+  });
+});
+
 //NOT LOGGED IN
 
 app.get("/", (req, res) => {
