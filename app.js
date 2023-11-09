@@ -9,7 +9,10 @@ const mongoose = require("mongoose");
 const session = require("express-session");
 const bcrypt = require("bcryptjs");
 const moment = require("moment");
+
 const multer = require("multer");
+const sharp = require('sharp');
+
 const path = require("path");
 const fs = require("fs");
 const Chart = require("chart.js");
@@ -152,13 +155,25 @@ app.get("/reset-inactivity", (req, res) => {
   res.sendStatus(200); // Send a success response
 });
 
+// Configure storage for artifact images
 const MIME_TYPE_MAP = {
   'image/png': 'png',
   'image/jpeg': 'jpg',
   'image/jpg': 'jpg',
 };
 
-const storage = multer.memoryStorage(); // Store the file in memory
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "public/uploads");
+  },
+  filename: (req, file, cb) => {
+    const randomDigits = Math.random().toString().slice(2, 5); // Three random digits
+    const originalFilename = file.originalname.split(".").shift(); // Extract the original filename without extension
+    const fileExtension = MIME_TYPE_MAP[file.mimetype] || 'jpg'; // Use the mapped extension or default to 'jpg'
+    const newFilename = `${originalFilename}-${randomDigits}.${fileExtension}`;
+    cb(null, newFilename);
+  },
+});
 
 // Define the file filter function
 const fileFilter = (req, file, cb) => {
@@ -178,27 +193,33 @@ const fileFilter = (req, file, cb) => {
 };
 
 // Set up the multer middleware with the storage and file filter
-const upload = multer({ storage: storage, fileFilter: fileFilter }).single("image");
+const upload = multer({ storage: storage, fileFilter: fileFilter });
 
-// Handle the file upload and conversion to base64
-app.post("/upload", (req, res) => {
-  upload(req, res, (err) => {
-    if (err) {
-      return res.status(400).json({ error: err });
-    }
-    
-    if (!req.file) {
-      return res.status(400).json({ error: "No file provided." });
-    }
-    
-    const fileBuffer = req.file.buffer;
-    const base64String = fileBuffer.toString("base64");
+// Middleware to process the image using Sharp before saving
+const processImage = (req, res, next) => {
+  if (!req.file) {
+    return next();
+  }
 
-    // Now, you can store the base64String in your database or use it as needed
-    // For example, you can send it as a response or save it to a database
-    res.status(200).json({ base64Image: base64String });
-  });
-});
+  const imagePath = path.join("public/uploads", req.file.filename);
+
+  // Resize and compress the image using Sharp
+  sharp(imagePath)
+    .resize({ width: 800, height: 600 })
+    .toFormat('jpeg')
+    .jpeg({ quality: 90 })
+    .toFile(imagePath, (err) => {
+      if (err) {
+        return next(err);
+      }
+      next();
+    });
+};
+
+module.exports = {
+  upload: upload,
+  processImage: processImage,
+};
 
 //NOT LOGGED IN
 
