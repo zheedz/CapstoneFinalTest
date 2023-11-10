@@ -965,14 +965,14 @@ app.post(
   upload.single("image"),
   async (req, res) => {
     const { title, description, type } = req.body;
-    const imageBuffer= req.file.toBuffer; // Get the uploaded image file name
+    const imageBuffer = req.file.buffer; // Corrected line to get the buffer
 
     try {
       const artifact = new Artifact({
         title,
         type,
         description,
-        image:imageBuffer.toString('base64'),
+        image: imageBuffer.toString('base64'),
       });
       await artifact.save();
       res.redirect("/loggedInadmin"); // Redirect to the admin page after adding the artifact

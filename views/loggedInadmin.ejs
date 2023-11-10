@@ -340,7 +340,9 @@
             <% artifacts.forEach(artifact=> { %>
               <div class="col-12 col-md-6 col-lg-4">
                 <div class="card mb-3">
-                  <img src="/uploads/<%= artifact.image %>" class="card-img-top" alt="<%= artifact.title %>">
+
+                  <img src="data:image/jpeg;base64,<%= artifact.image %>" class="card-img-top"
+                    alt="<%= artifact.title %>">
                   <div class="card-body">
                     <h5 class="card-title">
                       <%= artifact.title %>
@@ -415,17 +417,17 @@
           </div>
 
           <!-- Blocked dates by week -->
-            <div class="col-md-6 my-3">
-              <h2>Blocked Dates by Week</h2>
-              <canvas id="blockedDatesByWeekChart" width="400" height="400"></canvas>
-            </div>
+          <div class="col-md-6 my-3">
+            <h2>Blocked Dates by Week</h2>
+            <canvas id="blockedDatesByWeekChart" width="400" height="400"></canvas>
+          </div>
 
 
           <!-- Artifacts by Type -->
-            <div class="col-md-6 my-3">
-              <h2>Artifacts by Type</h2>
-              <canvas id="artifactsByTypeChart" width="400" height="400"></canvas>
-            </div>
+          <div class="col-md-6 my-3">
+            <h2>Artifacts by Type</h2>
+            <canvas id="artifactsByTypeChart" width="400" height="400"></canvas>
+          </div>
 
         </div>
 
@@ -476,6 +478,25 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="/js/admin.js"></script>
   <script src="/js/index.js"></script>
+  <script>
+  // Add an event listener to the file input to update the image preview
+  document.getElementById('image').addEventListener('change', function(event) {
+    const fileInput = event.target;
+    const imagePreview = document.getElementById('image-preview');
+    const previewContainer = document.getElementById('image-preview-container');
+
+    if (fileInput.files && fileInput.files[0]) {
+      const reader = new FileReader();
+
+      reader.onload = function (e) {
+        imagePreview.src = e.target.result;
+        previewContainer.style.display = 'block';
+      };
+
+      reader.readAsDataURL(fileInput.files[0]);
+    }
+  });
+</script>
   <script>
     document.addEventListener("DOMContentLoaded", function () {
       // Get user data from your server-side rendering (Assuming you've already passed 'users' and 'reservations' from your route)
@@ -736,5 +757,7 @@
 
   </script>
 </body>
+
+
 
 </html>
