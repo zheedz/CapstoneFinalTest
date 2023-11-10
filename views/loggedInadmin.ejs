@@ -341,7 +341,7 @@
               <div class="col-12 col-md-6 col-lg-4">
                 <div class="card mb-3">
 
-                  <img src="data:image/jpeg;base64,<%= artifact.image %>" class="card-img-top"
+                  <img src="data:image/png;base64,<%= artifact.decodedImage.toString('base64') %>" class="card-img-top"
                     alt="<%= artifact.title %>">
                   <div class="card-body">
                     <h5 class="card-title">

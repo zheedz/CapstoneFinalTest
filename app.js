@@ -393,6 +393,13 @@ app.get("/loggedInadmin", async (req, res) => {
       );
     }
 
+    // Decode Base64 image data in artifacts
+      artifacts = artifacts.map((artifact) => {
+      const decodedImage = Buffer.from(artifact.image, 'base64');
+      // Assuming you have a property like "decodedImage" in your artifact schema
+      return { ...artifact.toObject(), decodedImage };
+    });
+
     res.render("loggedInadmin", {
       users,
       search,
